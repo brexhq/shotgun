@@ -66,12 +66,12 @@
 -type connection_type() :: http | https.
 
 -type open_opts()       ::
-        #{ %% transport_opts are passed to Ranch's TCP transport, which is
-           %% -itself- a thin layer over gen_tcp.
-           transport_opts => []
+        #{
+           tcp_opts => [],
+           tls_opts => [],
            %% timeout is passed to gun:await_up. Default if not specified
            %% is 5000 ms.
-         , timeout => timeout()
+           timeout => timeout()
            %% gun_opts are passed to gun:open
          , gun_opts => gun:opts()
          }.
@@ -358,13 +358,15 @@ init([{Host, Port, Type, Opts}]) ->
                   http -> tcp;
                   https -> ssl
               end,
-    TransportOpts = maps:get(transport_opts, Opts, []),
+    TLSOpts = maps:get(tls_opts, Opts, []),
+    TCPOpts = maps:get(tcp_opts, Opts, []),
     PassedGunOpts = maps:get(gun_opts, Opts, #{}),
     DefaultGunOpts = #{
                 transport      => GunType,
                 retry          => 1,
                 retry_timeout  => 1,
-                transport_opts => TransportOpts
+                tls_opts       => TLSOpts,
+                tcp_opts       => TCPOpts
                },
     GunOpts = maps:merge(DefaultGunOpts, PassedGunOpts),
     Timeout = maps:get(timeout, Opts, 5000),
