@@ -439,6 +439,8 @@ at_rest({call, From}, Event, StateData) ->
     enqueue_work_or_stop(at_rest, Event, From, StateData);
 at_rest(cast, {'DOWN', _, _, _, Reason}, _StateData) ->
     exit(Reason);
+at_rest(cast, {gun_down, _, _, _, Reason}, _StateData) ->
+    exit(Reason);
 at_rest(timeout, _Event, StateData) ->
     case get_work(StateData) of
         no_work ->
